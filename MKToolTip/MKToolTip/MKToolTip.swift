@@ -114,6 +114,7 @@ public extension UIBarItem {
         @objc public var message: Message = Message()
         @objc public var button: Button = Button()
         @objc public var background: Background = Background()
+        @objc public var customView: UIView?
     }
     
     @objc public class Animating: NSObject {
@@ -213,24 +214,28 @@ open class MKToolTip: UIView {
         }()
     
     private lazy var bubbleSize: CGSize = { [unowned self] in
-        var height = self.preferences.drawing.bubble.inset
-        
-        if self.title != nil {
-            height += self.titleSize.height + self.preferences.drawing.bubble.spacing
+        if let customView = self.preferences.drawing.customView {
+            return CGSize(width: customView.frame.width + preferences.drawing.bubble.inset * 2, height: customView.frame.height + preferences.drawing.bubble.inset * 2)
+        } else {
+            var height = self.preferences.drawing.bubble.inset
+            
+            if self.title != nil {
+                height += self.titleSize.height + self.preferences.drawing.bubble.spacing
+            }
+            
+            height += self.messageSize.height
+            
+            if self.button != nil {
+                height += self.preferences.drawing.bubble.spacing + self.buttonSize.height
+            }
+            
+            height += self.preferences.drawing.bubble.inset
+            
+            let widthInset = self.preferences.drawing.bubble.inset * 2
+            let width = min(self.preferences.drawing.bubble.maxWidth, max(self.titleSize.width + widthInset, self.messageSize.width + widthInset))
+            return CGSize(width: width, height: height)
         }
-        
-        height += self.messageSize.height
-        
-        if self.button != nil {
-            height += self.preferences.drawing.bubble.spacing + self.buttonSize.height
-        }
-        
-        height += self.preferences.drawing.bubble.inset
-        
-        let widthInset = self.preferences.drawing.bubble.inset * 2
-        let width = min(self.preferences.drawing.bubble.maxWidth, max(self.titleSize.width + widthInset, self.messageSize.width + widthInset))
-        return CGSize(width: width, height: height)
-        }()
+    }()
     
     private lazy var contentSize: CGSize = { [unowned self] in
         var height: CGFloat = 0
@@ -348,6 +353,7 @@ open class MKToolTip: UIView {
         createWindow(with: viewController)
         addTapGesture(for: viewController)
         showWithAnimation()
+        addCustomViewIfNeeded()
     }
     
     private func createWindow(with viewController: UIViewController) {
@@ -529,8 +535,21 @@ open class MKToolTip: UIView {
             let buttonRect = CGRect(x: xOrigin, y: yOrigin, width: buttonSize.width, height: buttonSize.height)
             button!.draw(in: buttonRect, withAttributes: [NSAttributedString.Key.font : preferences.drawing.button.font, NSAttributedString.Key.foregroundColor : preferences.drawing.button.color, NSAttributedString.Key.paragraphStyle : paragraphStyle])
         }
-        
     }
+    
+    private func addCustomViewIfNeeded() {
+        guard let customView = preferences.drawing.customView else { return }
+        
+        customView.frame = CGRect(
+            x: preferences.drawing.bubble.inset,
+            y: preferences.drawing.bubble.inset,
+            width: customView.frame.width,
+            height: customView.frame.height
+        )
+        
+        addSubview(customView)
+    }
+
 }
 
 // MARK: RadialGradientBackgroundLayer
@@ -571,4 +590,3 @@ private class RadialGradientBackgroundLayer: CALayer {
         ctx.restoreGState()
     }
 }
-
