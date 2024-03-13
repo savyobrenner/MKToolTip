@@ -50,6 +50,14 @@ public extension UIBarItem {
     
 }
 
+public extension UIBarButtonItem {
+    @objc public override func showToolTip(identifier: String, title: String? = nil, message: String, button: String? = nil, arrowPosition: MKToolTip.ArrowPosition, preferences: ToolTipPreferences = ToolTipPreferences(), delegate: MKToolTipDelegate? = nil) {
+        if let view = self.view {
+            view.showToolTip(identifier: identifier, title: title, message: message, button: button, arrowPosition: arrowPosition, preferences: preferences, delegate: delegate)
+        }
+    }
+}
+
 // MARK: Preferences
 
 @objc public class ToolTipPreferences: NSObject {
