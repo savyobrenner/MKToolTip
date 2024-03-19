@@ -389,7 +389,7 @@ open class MKToolTip: UIView {
         })
     }
     
-    func dismissWithAnimation() {
+    public func dismissWithAnimation() {
         UIView.animate(withDuration: preferences.animating.dismissDuration, delay: 0, usingSpringWithDamping: preferences.animating.springDamping, initialSpringVelocity: preferences.animating.springVelocity, options: [.curveEaseInOut], animations: {
             self.transform = self.preferences.animating.dismissTransform
             self.alpha = self.preferences.animating.dismissFinalAlpha
