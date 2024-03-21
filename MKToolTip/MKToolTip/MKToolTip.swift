@@ -442,12 +442,14 @@ open class MKToolTip: UIView {
     // MARK: Drawing methods
     
     private func drawBackgroundLayer() {
-        if let view = self.containerWindow?.rootViewController?.view {
-            let refViewFrame = presentingView.convert(presentingView.bounds, to: UIApplication.shared.keyWindow);
-            let radius = refViewFrame.center.farCornerDistance()
-            let frame = view.bounds
-            let layer = RadialGradientBackgroundLayer(locations: preferences.drawing.background.gradientLocations, colors: preferences.drawing.background.gradientColors)
-            view.layer.insertSublayer(layer, at: 0)
+        DispatchQueue.main.async { [self] in
+            if let view = self.containerWindow?.rootViewController?.view {
+                let refViewFrame = presentingView.convert(presentingView.bounds, to: UIApplication.shared.keyWindow);
+                let radius = refViewFrame.center.farCornerDistance()
+                let frame = view.bounds
+                let layer = RadialGradientBackgroundLayer(frame: frame, center: refViewFrame.center, radius: radius, locations: preferences.drawing.background.gradientLocations, colors: preferences.drawing.background.gradientColors)
+                view.layer.insertSublayer(layer, at: 0)
+            }
         }
     }
     
@@ -582,6 +584,8 @@ open class MKToolTip: UIView {
 
 private class RadialGradientBackgroundLayer: CALayer {
     
+    private var center: CGPoint = .zero
+    private var radius: CGFloat = 0
     private var locations: [CGFloat] = [CGFloat]()
     private var colors: [UIColor] = [UIColor]()
     
@@ -595,31 +599,22 @@ private class RadialGradientBackgroundLayer: CALayer {
         fatalError("init(coder:) has not been implemented")
     }
     
-    init(locations: [CGFloat], colors: [UIColor]) {
+    init(frame: CGRect, center: CGPoint, radius: CGFloat, locations: [CGFloat], colors: [UIColor]) {
         super.init()
+        needsDisplayOnBoundsChange = true
+        self.frame = frame
+        self.center = center
+        self.radius = radius
         self.locations = locations
         self.colors = colors
     }
     
     override func draw(in ctx: CGContext) {
         ctx.saveGState()
-        
         let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let cgColors = self.colors.map { $0.cgColor } as CFArray
-        let gradient = CGGradient(colorsSpace: colorSpace, colors: cgColors, locations: locations)
-        
-        // Use as dimensões da tela como o tamanho do gradiente
-        let screenBounds = UIScreen.main.bounds
-        let gradientCenter = CGPoint(x: screenBounds.midX, y: screenBounds.midY)
-        let gradientRadius = max(screenBounds.width, screenBounds.height) / 2.0
-        
-        ctx.drawRadialGradient(gradient!,
-                               startCenter: gradientCenter,
-                               startRadius: 0,
-                               endCenter: gradientCenter,
-                               endRadius: gradientRadius,
-                               options: [])
-        
+        let colors = self.colors.map { $0.cgColor }
+        let gradient = CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations)
+        ctx.drawRadialGradient(gradient!, startCenter: center, startRadius: 0, endCenter: center, endRadius: radius, options: [])
         ctx.restoreGState()
     }
 }
