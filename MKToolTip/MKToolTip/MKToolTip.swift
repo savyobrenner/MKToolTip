@@ -113,7 +113,7 @@ public extension UIBarButtonItem {
                 }
             }
             @objc fileprivate var gradientLocations: [CGFloat] = [0.05, 1.0]
-            @objc fileprivate var gradientColors: [UIColor] = [UIColor.clear, UIColor.black.withAlphaComponent(0.4)]
+            @objc fileprivate var gradientColors: [UIColor] = [ UIColor.black.withAlphaComponent(0.4), UIColor.black.withAlphaComponent(0.4)]
         }
         
         @objc public var arrow: Arrow = Arrow()
