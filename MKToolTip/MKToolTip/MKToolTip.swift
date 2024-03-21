@@ -445,6 +445,7 @@ open class MKToolTip: UIView {
         if let view = self.containerWindow?.rootViewController?.view {
             let refViewFrame = presentingView.convert(presentingView.bounds, to: UIApplication.shared.keyWindow);
             let radius = refViewFrame.center.farCornerDistance()
+            view.backgroundColor = .red
             let frame = view.bounds
             let layer = RadialGradientBackgroundLayer(frame: frame, center: refViewFrame.center, radius: radius, locations: preferences.drawing.background.gradientLocations, colors: preferences.drawing.background.gradientColors)
             view.layer.insertSublayer(layer, at: 0)
