@@ -276,6 +276,10 @@ open class MKToolTip: UIView {
         self.backgroundColor = .clear
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     @available(*, unavailable)
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -410,6 +414,12 @@ open class MKToolTip: UIView {
         drawTexts(to: context)
     }
     
+    override open func layoutSubviews() {
+        super.layoutSubviews()
+        calculateFrame()
+        setNeedsDisplay()
+    }
+    
     private func viewDidAppear() {
         self.viewDidAppearDate = Date()
         self.delegate?.toolTipViewDidAppear(for: self.identifier)
@@ -419,6 +429,14 @@ open class MKToolTip: UIView {
         let viewDidDisappearDate = Date()
         let timeInterval = viewDidDisappearDate.timeIntervalSince(self.viewDidAppearDate)
         self.delegate?.toolTipViewDidDisappear(for: self.identifier, with: timeInterval)
+    }
+    
+    private func subscribeToDeviceOrientationChanges() {
+        NotificationCenter.default.addObserver(self, selector: #selector(deviceOrientationDidChange), name: UIDevice.orientationDidChangeNotification, object: nil)
+    }
+    
+    @objc private func deviceOrientationDidChange() {
+        layoutSubviews()
     }
     
     // MARK: Drawing methods
